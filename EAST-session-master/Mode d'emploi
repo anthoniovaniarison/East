@@ -12,3 +12,6 @@ Export session Telecharge le dossier xml de sauvegarde des slides
 
 choisir un fichier permet de recuperer  une session de sauvegarde
 
+Pour lancer la présentation avec l'audio selectionner les deux fichier audio et xml grace au bouton parcourir
+
+Pour lancer la presentation seul charger le fichier xml et le lancer directement grace au bouton lancer la presentation
