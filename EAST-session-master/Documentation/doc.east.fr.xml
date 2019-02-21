@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="ISO-8859-1"?><EAST transition="burst">
+<PIEDPAGE_GAUCHE>
+Sauvegarde de session pour EAST
+</PIEDPAGE_GAUCHE>
+<PIEDPAGE_DROIT>
+20 février 2013
+</PIEDPAGE_DROIT>
+<PAGE_TITRE>
+<TITRE>Projet Multimédia 1</TITRE><SOUS_TITRE>Mise en place d'un système de sauvegarde de session pour EAST</SOUS_TITRE><AUTEUR>Groupe 7 : Franck Nguyen et Alexandre Sicard</AUTEUR>
+</PAGE_TITRE>
+<PARTIE>
+<TITRE>EAST: Analyse de l'existant</TITRE>
+<SECTION>
+<TITRE>EAST: Analyse de l'existant</TITRE>
+<LISTE type="square">
+<EL>EAST s'articule autour de deux dossiers&#8239;: config_Jaxe et config_EAST</EL>
+<EL>
+<LISTE type="disc">
+<TITRE>config_Jaxe</TITRE>
+<EL>EAST.xsl</EL>
+</LISTE>
+</EL>
+<EL>
+<LISTE type="disc">
+<TITRE>config_EAST</TITRE>
+<EL>Feuilles de style CSS</EL>
+<EL>Code Javascript</EL>
+<EL>Bibliothèques : timesheets</EL>
+</LISTE>
+</EL>
+</LISTE>
+</SECTION>
+</PARTIE>
+<PARTIE>
+<TITRE>Identification des évènements de navigation</TITRE>
+<SECTION>
+<TITRE>Identification des évènements de navigation</TITRE>
+<LISTE type="square">
+<EL>Changement de slide</EL>
+<EL>Défilement d'une slide (liste incrémentales)</EL>
+<EL>Réinitialisation d'une slide</EL>
+<EL>Déroulement/enroulement de listes dépliables</EL>
+</LISTE>
+</SECTION>
+</PARTIE>
+<PARTIE>
+<TITRE>Enregistrement de session</TITRE>
+<SECTION>
+<TITRE>Enregistrement de session</TITRE>
+<LISTE type="square">
+<EL>
+<LISTE type="disc">
+<TITRE>Overrides de fonctions</TITRE>
+<EL>Sauvegarde de la référence à la fonction de navigation et création d'une fonction ayant le même nom. Permet de programmer la sauvegarde d'une trace de l'appel à la fonction avant de réellement l'appeler.</EL>
+</LISTE>
+</EL>
+<EL>
+<LISTE type="disc">
+<TITRE>Ajout de listeners</TITRE>
+<EL>Création de fonctions qui seront appelées lors du déclenchement d'un évènement.</EL>
+</LISTE>
+</EL>
+<EL>sessionEvents : (type de l'évènement, id, temps relatif)</EL>
+</LISTE>
+</SECTION>
+</PARTIE>
+<PARTIE>
+<TITRE>Export et import de session</TITRE>
+<SECTION>
+<TITRE>Export et import de session</TITRE>
+<LISTE type="square">
+<EL>
+<LISTE type="disc">
+<TITRE>sessionEventsToXml</TITRE>
+<EL>Création d'un fichier XML à partir du tableau sessionEvents pour visualiser et enregistrer la sauvegarde de la session.</EL>
+</LISTE>
+</EL>
+<EL>
+<LISTE type="disc">
+<TITRE>xmlToSessionEvents</TITRE>
+<EL>Lecture d'un fichier XML dont les données seront stockées dans sessionEvents.</EL>
+</LISTE>
+</EL>
+</LISTE>
+</SECTION>
+</PARTIE>
+<PARTIE>
+<TITRE>Lecture de session</TITRE>
+<SECTION>
+<TITRE>Lecture de session</TITRE>
+<LISTE type="square">
+<EL>Mise à jour d'une variable : passage du mode "enregistrement" au mode "lecture"</EL>
+<EL>Planification récursive des évènements</EL>
+<EL>Navigation pendant la lecture : pause et sauts</EL>
+</LISTE>
+</SECTION>
+</PARTIE>
+<PARTIE>
+<TITRE>Extension</TITRE>
+<SECTION>
+<TITRE>Extension</TITRE>
+<PARAGRAPHE>
+Création d'une API d'accès aux fonctionnalités de EAST-session&#8239;:
+</PARAGRAPHE>
+<LISTE mode="incremental_allume" type="square">
+<EL>record()&#8239;: démarrage de l'enregistrement de la session</EL>
+<EL>play()&#8239;: démarrage de la lecture de la session chargée en mémoire</EL>
+<EL>pause()&#8239;: suspension/reprise de la lecture de la session</EL>
+<EL>jump(millis)&#8239;: déplacement de la lecture au temps indiqué</EL>
+<EL>load(str)&#8239;: chargement d'une session</EL>
+<EL>save()&#8239;: renvoie la session</EL>
+</LISTE>
+<PARAGRAPHE>
+But&#8239;: faciliter l'intégration d'un système de lecture synchronisée d'une présentation et de son commentaire audio et vidéo.
+</PARAGRAPHE>
+</SECTION>
+</PARTIE>
+</EAST>

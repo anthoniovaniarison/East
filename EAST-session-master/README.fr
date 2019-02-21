@@ -1,0 +1,12 @@
+EAST-session a pour but d'ajouter un système de sauvegarde de session à EAST.
+Ce projet est réalisé dans le cadre du cours Multimédia de Didier Courtaud à
+l'Université d'Évry, pendant notre dernière année de Master.
+Auteurs : Franck Nguyen, Alexandre Sicard
+
+====================
+
+EAST (EAsy Slide Tool) est un système de création, de présentation et
+d'impression de présentations basé sur XML et HTML.
+
+Auteur : Didier Courtaud (CEA)
+Contributeur : Pierre Brochard (CEA)

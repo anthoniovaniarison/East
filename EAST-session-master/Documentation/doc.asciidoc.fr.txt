@@ -1,0 +1,171 @@
+= Création d'un système de sauvegarde de session pour EAST
+Franck Nguyen, Alexandre Sicard
+
+== Analyse de l’existant
+Notre travail a commencé par une étude du fonctionnement interne de EAST. Son
+code est structuré en deux dossiers : +config_EAST+, qui contient du code
+Javascript, des feuilles CSS et un fichier .smil, et +config_Jaxe+, qui
+contient des documents XML.
+
+Nous nous sommes d’abord intéressé au plus gros fichier, +EAST.xsl+ du dossier
++config_Jaxe+. Ce document est le cœur de EAST, la feuille de transformation
+XSLT qui permet de transformer le XML définissant le contenu d’une présentation
+vers un HTML contenant son support.
+
+Ensuite, nous avons regardé de plus près les différents fichiers Javascript du
+dossier +config_EAST+. La plupart sont des bibliothèques utilisées par EAST,
+qui ne contient lui-même que peu de code Javascript, pour la gestion du
+redimensionnement et de l’impression. La bibliothèqe la plus importante s’est
+révélée être _timesheets.js_. C’est elle qui gère le défilement et la
+navigation dans la présentation ainsi que l’interface avec l’utilisateur.
+
+Le cœur de EAST, c’est la transformation d’un plan sous forme de XML, vers une
+présentation dynamique en HTML. Notre travail consistant à ajouter une
+fonctionnalité à cette présentation, nous avons donc conçu le système de
+sauvegarde de session comme un supplément à EAST qui repose uniquement sur du
+code Javascript fortement lié à la bibliothèque +timesheets+.
+
+== Identification des évènements
+La sauvegarde d’une session consiste en l’enregistrement de tout évènement
+significatif se produisant pendant la présentation. Nous avons donc d’abord
+identifié les différents évènements pouvant avoir lieu, en nous basant sur la
+présentation d’exemple fournie avec EAST :
+
+* changement de slide
+* défilement d’une slide (avec les listes incrémentales)
+* réinitialisation d’une slide
+* déroulement/enroulement des listes dépliables
+
+Il nous fallait ensuite trouver quelle fonction de la bibliothèque +timesheets+
+gère ces différents évènements. Pour cela, nous avons regardé les détails du
+fichier ‘timesheets-navigation.js’. Le code contenu dans ce fichier se charge
+d’attacher des fonctions à des évènements clavier et souris. On peut y voir
+quelle fonction est appelée lors d’un changement de slide, de leur défilement
+et de leur réinitialisation, car elles sont toutes attachées à une touche du
+clavier particulière. Les fonctions sont les suivantes :
+
+* +selectIndex+ pour le changement de slide
+* +reset+, suivi de +show+ pour la réinitialisation
+
+La gestion du défilement d’une slide et des listes dépliables est particulier :
+les listes dépliables ne sont pas gérées directement par +timesheets+, mais les
+deux fonctionnent simplement en simulant un clic, sur la slide pour le premier
+cas, sur la liste pour le second.
+
+== Enregistrement de session
+Connaissant les fonctions attachées aux évènements, notre choix a été de
+profiter du dynamisme de Javascript pour les remplacer par des fonctions de
+notre cru, qui enregistrent l’évènement dans une liste avant de repasser leurs
+paramètres aux fonctions d’origine. Il nous semble important de relever une
+particularité dans le fonctionnement de +timesheets+ : la bibliothèque créé
+plusieurs objets de type +TimeContainer+ qui disposent chacun des fonctions que
+nous voulons remplacer. À défaut d’avoir trouvé un moyen de modifier
+directement la fonction parente, nous les remplaçons pour tous les
++TimeContainer+. En ce qui concerne les évènements déclenchés par des clics de
+souris, nous nous contentons d’enregistrer une fonction supplémentaire à
+l’évènement +click+ des objets concernés, à l’aide de la fonction standard
++addEventListener+. Le procédé est donc le suivant :
+----
+Pour chaque TimeContainer tc
+    copier tc.selectIndex vers tc.org_selectIndex
+    copier tc.reset vers tc.org_reset
+    copier tc.show vers tc.org_show
+    tc.selectIndex = <notre fonction qui enregistre l’évènement et appelle
+                      tc.org_selectIndex>
+    tc.reset = ...
+FinPour
+Pour chaque Slide et pour chaque Liste dépliable e
+    e.addEventListener(“click”, <notre fonction qui enregistre
+                                 l’évènement>)
+FinPour
+----
+
+Nous disposons d’un tableau +sessionEvents+ accessible à toutes nos fonctions,
+qui stocke tous les évènements ayant été capturés sous forme d’un objet. Cet
+objet contient le type d’évènement, l’identifiant de l’objet sur lequel il
+s’est produit, et le temps entre cet évènement et l’évènement précédent. C’est
+donc un temps relatif qui est stocké, ce qui permet de simplifier l’édition
+manuelle de la session.
+
+== Export et import
+Une fois la session enregistrée, nous devions fournir un moyen permettant de la
+sauvegarder dans un fichier afin qu’elle puisse être rechargée plus tard. Les
+présentation EAST étant stockées sous forme de fichier XML, nous avons jugé
+préférable d’utiliser le même format pour la sauvegarde des sessions.
+
+Pour créer ce fichier, nous commençons par créer un document XML à l’aide de la
+méthode +createDocument+ de l’interface +DOMImplementation+. Pour chaque objet
+du tableau +sessionEvents+, nous ajoutons un nœud à ce document, en lui donnant
+des attributs identiques à ceux de notre objet. Nous devons permettre à
+l’utilisateur de visualiser et d’enregistrer facilement ce fichier : pour cela,
+nous ouvrons une nouvelle fenêtre de navigation à l’aide de la méthode
++window.open+. L’URL passée dans cette fenêtre contient directement notre
+fichier XML converti en chaîne de caractères encodée en base64, auquel nous
+avons ajouté quelques commentaires pour guider l’utilisateur.
+
+L’importation d’une session fonctionne de façon inverse. Nous avons profité de
+l’API _File API_ disponible depuis HTML5 afin de lire un fichier de session
+sélectionné par l’utilisateur. Notre fichier chargé, nous le reconvertissons en
+arborescence DOM afin d’accèder plus facilement à ses éléments à l’aide de
+méthodes standards. Nous lisons ensuite chaque nœud du document et remplissons
+le tableau +sessionEvents+ avec les évènements sauvegardés.
+
+Au final, la structure de ces fichiers de sauvegarde de session est
+suffisamment simple pour qu’ils puissent être relus ou modifiés par un humain.
+
+== Lecture de session
+La lecture de la session sauvegardée se fait en recréant la suite d’évènements
+qui nous a permis de la générer. Pour chaque évènement du tableau
++sessionEvents+, soit nous appelons la fonction de +timesheets+ correspondant,
+soit nous simulons un clic sur l’objet concerné. Nous gardons dans une variable
+la position actuelle de la lecture, correspondant à l’index de l’évènement dans
+le tableau.
+
+La lecture de session se base sur une planification récursive des évènements :
+lorsque la fonction de lecture est appelée, l’évènement est joué et l’évènement
+suivant est programmé de la même façon. Pour cela, nous utilisons la la méthode
++window.setTimeout+ à laquelle nous passons la fonction de lecture et le temps
+à attendre avant de l’appeler. Nous stockons également l’objet renvoyé par
+cette fonction afin de pouvoir déprogrammer l’évènement et donc arrêter la
+lecture si besoin.
+
+L’appel des fonctions d’évènement des slides déclenche logiquement nos propres
+fonctions d’enregistrement des évènements. Nous permettons donc à notre code,
+par une variable booléenne, de savoir s’il est en enregistrement ou en lecture.
+Dans ce dernier cas, l’évènement n’est pas enregistré afin de ne pas perturber
+la lecture de la session qui utilise le même tableau d’évènements.
+
+Nous ajoutons des fonctions supplémentaires utiles : une fonction de pause qui
+permet de suspendre et de reprendre la lecture de la session. Pour cela, nous
+annulons le prochain évènement planifié et stockons le temps qu’il restait
+avant son déclenchement. À la reprise de la lecture, ce temps est utilisé pour
+planifier de nouveau l’évènement. Nous ajoutons également une fonction de saut
+: elle permet de se déplacer à n’importe quel temps de la présentation. Elle
+est implémentée par un calcul de la somme des temps entre chaque évènement. Dès
+que cette somme atteint le temps demandé, nous sautons à l’évènement
+correspondant en passant par tous les états intermédiaires et nous calculons le
+temps restant avant le prochain évènement. La lecture reprend alors comme si
+elle avait été mise en pause.
+
+== Extension
+Afin de permettre à notre code d’être réutilisable facilement, nous proposons
+une API d’accès aux fonctionnalités de EAST-session. Celles-ci sont rangées
+dans l’objet +document.SESSION+ et sont les suivantes :
+
+* +record()+ démarre l’enregistrement de la session. Elle est automatiquement
+appelée dès l’ouverture d’une présentation EAST. L’appeler de nouveau efface
+tous les évènements enregistrés précédemment.
+* +play()+ démarre la lecture de la session chargée en mémoire
+* +pause()+ suspend la lecture de la session ou la fait reprendre si elle était
+suspendue
+* +jump(millis)+ déplace la lecture au temps indiqué, en millisecondes
+* +import(str)+ charge une session sous forme de chaîne de caractères
+représentant un document XML construit comme nos fichiers de session
+* +export()+ renvoie la session en mémoire sous forme d’un document XML
+converti en chaîne de caractères
+
+Cette API permettra, nous l’espérons, d’intégrer facilement dans EAST et à
+l’aide de EAST-session un système de lecture synchronisée d’une présentation et
+de son commentaire audio et vidéo.
+
+// vim: syntax=asciidoc:
