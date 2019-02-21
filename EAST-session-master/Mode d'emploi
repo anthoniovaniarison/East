@@ -1,0 +1,14 @@
+Pour ouvrir EAST, il faut  copier le dossier EAST_config dans le repertoire TutorielEAST
+
+L'enregistrement audio de l'appli commence au moment où l'on clique sur le bouton RecAudio
+
+Arreter l'enregistrement avec Stoprecord
+
+Vous avez encuite deux possibilité, ecouter imediatement l'audio enregistrer par le bouton testAudio ou alors telecharger le contenu par dLAudio
+
+Pour ce qui est de la presentation "slide" Record Session commence l enregistrement des slides
+
+Export session Telecharge le dossier xml de sauvegarde des slides
+
+choisir un fichier permet de recuperer  une session de sauvegarde
+
